@@ -123,9 +123,6 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${FANN_LIBRARIES}
   ${OpenMP_LIBS}
-
-  -static-libgcc
-  -static-libstdc++
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
