@@ -62,11 +62,19 @@ public:
     {
         weight_ = 1;
         link_name_ = "";
+        secondary_ = false;
     }
     LinkGoalBase(const std::string& link_name, double weight)
     {
         weight_ = weight;
         link_name_ = link_name;
+        secondary_ = false;
+    }
+    LinkGoalBase(const std::string& link_name, double weight, bool secondary)
+    {
+        weight_ = weight;
+        link_name_ = link_name;
+        secondary_ = secondary;
     }
     virtual void describe(GoalContext& context) const
     {
@@ -105,8 +113,8 @@ public:
         : orientation_(0, 0, 0, 1)
     {
     }
-    OrientationGoal(const std::string& link_name, const tf2::Quaternion& orientation, double weight = 1.0)
-        : LinkGoalBase(link_name, weight)
+    OrientationGoal(const std::string& link_name, const tf2::Quaternion& orientation, double weight = 1.0, bool secondary = false)
+        : LinkGoalBase(link_name, weight, secondary)
         , orientation_(orientation.normalized())
     {
     }
