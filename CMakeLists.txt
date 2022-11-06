@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_planning
   pluginlib
+  pybind11_catkin
   roscpp
   tf2
   tf2_eigen
@@ -124,6 +125,9 @@ target_link_libraries(${PROJECT_NAME}
   ${FANN_LIBRARIES}
   ${OpenMP_LIBS}
 )
+
+pybind_add_module(pybio_ik src/bindings.cpp)
+target_link_libraries(pybio_ik PUBLIC ${PROJECT_NAME})
 
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
