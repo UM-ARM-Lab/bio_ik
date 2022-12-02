@@ -47,6 +47,8 @@
 
     <build_depend>pybind11_catkin</build_depend>
     <run_depend>pybind11_catkin</run_depend>
+    <build_depend>pyrosmsg</build_depend>
+    <run_depend>pyrosmsg</run_depend>
 
     <test_depend>rosunit</test_depend>
 

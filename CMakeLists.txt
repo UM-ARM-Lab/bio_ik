@@ -1,73 +1,76 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(bio_ik)
 
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
-  set(CMAKE_BUILD_TYPE Release)
-endif()
+set(CMAKE_CXX_STANDARD 20)
+
+if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
 
 find_package(catkin REQUIRED COMPONENTS
-  eigen_conversions
-  moveit_core
-  moveit_ros_planning
-  pluginlib
-  pybind11_catkin
-  roscpp
-  tf2
-  tf2_eigen
-  tf2_kdl
-  tf2_geometry_msgs
-)
+        eigen_conversions
+        moveit_core
+        pyrosmsg
+        moveit_ros_planning
+        pluginlib
+        pybind11_catkin
+        roscpp
+        tf2
+        tf2_eigen
+        tf2_kdl
+        tf2_geometry_msgs
+        )
 
 find_package(OpenMP)
 # the specific flag is not yet present in cmake 2.8.12
-if(OpenMP_CXX_FOUND OR OPENMP_FOUND)
-  message(STATUS "OPENMP FOUND")
-  add_compile_options(${OpenMP_CXX_FLAGS})
-  if(NOT OpenMP_CXX_LIBRARIES)
-    # cmake 2.8.12 does not yet specify the library - assume we might need libgomp
-    set(OpenMP_LIBS gomp)
-  else()
-    set(OpenMP_LIBS ${OpenMP_CXX_LIBRARIES})
-  endif()
-else()
+if (OpenMP_CXX_FOUND OR OPENMP_FOUND)
+    message(STATUS "OPENMP FOUND")
+    add_compile_options(${OpenMP_CXX_FLAGS})
+    if (NOT OpenMP_CXX_LIBRARIES)
+        # cmake 2.8.12 does not yet specify the library - assume we might need libgomp
+        set(OpenMP_LIBS gomp)
+    else ()
+        set(OpenMP_LIBS ${OpenMP_CXX_LIBRARIES})
+    endif ()
+else ()
     message(WARNING "OPENMP NOT FOUND. You will suffer performance loss.")
     set(OpenMP_LIBS)
-endif()
+endif ()
 
 option(USE_FANN "build the neural-network-based IK solver (experimental)" OFF)
-if(USE_FANN)
+if (USE_FANN)
     find_library(FANN_LIBRARIES NAMES fann)
     find_path(FANN_INCLUDE_DIRS NAMES fann.h)
-    if(NOT FANN_INCLUDE_DIRS OR NOT FANN_LIBRARIES)
+    if (NOT FANN_INCLUDE_DIRS OR NOT FANN_LIBRARIES)
         message(FATAL_ERROR "Neural network solver requested, but libfann was not found.")
-    else()
+    else ()
         message("Found libfann: ${FANN_LIBRARIES} / ${FANN_INCLUDE_DIRS}")
-    endif()
-else()
+    endif ()
+else ()
     set(FANN_LIBRARIES)
     set(FANN_INCLUDE_DIRS)
-endif()
+endif ()
 
 option(USE_CPPOPTLIB "Include gradient-based solvers from CppNumericalSolvers (bio_ik also provides its own solver)" OFF)
-if(USE_CPPOPTLIB)
+if (USE_CPPOPTLIB)
     find_path(CPPOPTLIB_INCLUDE_DIRS
-        NAMES cppoptlib/solver/bfgssolver.h
-        HINTS ../../CppNumericalSolvers/include)
-    if(NOT CPPOPTLIB_INCLUDE_DIRS)
+            NAMES cppoptlib/solver/bfgssolver.h
+            HINTS ../../CppNumericalSolvers/include)
+    if (NOT CPPOPTLIB_INCLUDE_DIRS)
         message(FATAL_ERROR "cppoptlib support requested, but the headers could not be found.")
-    else()
+    else ()
         message("Found cppoptlib: ${CPPOPTLIB_INCLUDE_DIRS}")
-    endif()
+    endif ()
     add_definitions(-DENABLE_CPP_OPTLIB)
-else()
+else ()
     set(CPPOPTLIB_INCLUDE_DIRS)
-endif()
+endif ()
 
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+        CATKIN_DEPENDS
         eigen_conversions
         moveit_core
         moveit_ros_planning
@@ -78,41 +81,39 @@ catkin_package(
         tf2_geometry_msgs
 )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  add_compile_options(-frecord-gcc-switches)
-endif()
-
-add_compile_options(-std=c++11)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-frecord-gcc-switches)
+endif ()
 
 add_compile_options($<$<CONFIG:Release>:-O3>)
 add_compile_options($<$<CONFIG:Release>:-ftree-vectorize>)
 add_compile_options($<$<CONFIG:Release>:-ffast-math>)
 
 include_directories(
-    include
-    ${FANN_INCLUDE_DIRS}
-    ${CPPOPTLIB_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
+        include
+        ${FANN_INCLUDE_DIRS}
+        ${CPPOPTLIB_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
 )
 
 set(SOURCES
-    src/goal_types.cpp
-    src/kinematics_plugin.cpp
-    src/problem.cpp
+        src/goal_types.cpp
+        src/kinematics_plugin.cpp
+        src/problem.cpp
 
-    src/ik_test.cpp
-    src/ik_gradient.cpp
-    src/ik_evolution_1.cpp
-    src/ik_evolution_2.cpp
-)
+        src/ik_test.cpp
+        src/ik_gradient.cpp
+        src/ik_evolution_1.cpp
+        src/ik_evolution_2.cpp
+        )
 
-if(USE_FANN)
+if (USE_FANN)
     list(APPEND SOURCES src/ik_neural.cpp)
-endif()
+endif ()
 
-if(USE_CPPOPTLIB)
+if (USE_CPPOPTLIB)
     list(APPEND SOURCES src/ik_cppoptlib.cpp)
-endif()
+endif ()
 
 add_library(${PROJECT_NAME} ${SOURCES})
 
@@ -121,13 +122,16 @@ set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VE
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${FANN_LIBRARIES}
-  ${OpenMP_LIBS}
-)
+        ${catkin_LIBRARIES}
+        ${FANN_LIBRARIES}
+        ${OpenMP_LIBS}
+        )
 
 pybind_add_module(pybio_ik src/bindings.cpp)
 target_link_libraries(pybio_ik PUBLIC ${PROJECT_NAME})
+
+add_executable(myik src/myik.cpp)
+target_link_libraries(myik ${PROJECT_NAME})
 
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
