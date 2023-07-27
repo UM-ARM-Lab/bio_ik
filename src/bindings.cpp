@@ -59,7 +59,7 @@ class PyBioIK {
     auto jmg = model_->getJointModelGroup(group);
 
     robot_state::RobotState state(model_);
-    state.setVariablePositions(start);
+    state.setVariablePositions(jmg->getActiveJointModelNames(), start);
     state.update();
 
     return ik_from_state(jmg, state, opts);
