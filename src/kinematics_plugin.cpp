@@ -183,31 +183,13 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
           new robot_model::RobotModel(urdf_model, srdf));
     }
     return robot_model_cache[robot_description];
-
-    // return
-    // moveit::planning_interface::getSharedRobotModel(robot_description);
   }
 
   bool load(const moveit::core::RobotModelConstPtr &model,
             std::string robot_description, std::string group_name) {
     LOG_FNC();
 
-    // LOG_VAR(robot_description);
-    // LOG_VAR(group_name);
-
     LOG("bio ik init", ros::this_node::getName());
-
-    /*rdf_loader::RDFLoader rdf_loader(robot_description_);
-    auto srdf = rdf_loader.getSRDF();
-    auto urdf_model = rdf_loader.getURDF();
-
-    if(!urdf_model || !srdf)
-    {
-        LOG("URDF and SRDF must be loaded for kinematics solver to work.");
-        return false;
-    }
-
-    robot_model.reset(new robot_model::RobotModel(urdf_model, srdf));*/
 
     if (model) {
       this->robot_model = model;
@@ -236,12 +218,7 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
 
     link_names = tip_frames_;
 
-    // for(auto& n : joint_names) LOG("joint", n);
-    // for(auto& n : link_names) LOG("link", n);
-
-    // bool enable_profiler;
     lookupParam("profiler", enable_profiler, false);
-    // if(enable_profiler) Profiler::start();
 
     robot_info = RobotInfo(robot_model);
 
@@ -279,8 +256,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
         PoseGoal *goal = new PoseGoal();
 
         goal->setLinkName(tip_frames_[i]);
-
-        // LOG_VAR(goal->link_name);
 
         double rotation_scale = 0.5;
 
@@ -327,8 +302,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
         }
       }
     }
-
-    // LOG("init ready");
 
     return true;
   }
@@ -428,11 +401,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
                             solution, solution_callback, error_code, options);
   }
 
-  /*struct OptMod : kinematics::KinematicsQueryOptions
-  {
-      int test;
-  };*/
-
   virtual bool
   searchPositionIK(const std::vector<geometry_msgs::Pose> &ik_poses,
                    const std::vector<double> &ik_seed_state, double timeout,
@@ -445,10 +413,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
                    const moveit::core::RobotState *context_state = NULL) const {
     double t0 = ros::WallTime::now().toSec();
 
-    // timeout = 0.1;
-
-    // LOG("a");
-
     if (enable_profiler)
       Profiler::start();
 
@@ -457,9 +421,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
     LOG_FNC();
 
     FNPROFILER();
-
-    // LOG(typeid(options).name());
-    // LOG(((OptMod*)&options)->test);
 
     // get variable default positions / context state
     state.resize(robot_model->getVariableCount());
@@ -656,7 +617,6 @@ struct BioIKKinematicsPlugin : kinematics::KinematicsBase {
   virtual bool supportsGroup(const moveit::core::JointModelGroup *jmg,
                              std::string *error_text_out = 0) const {
     LOG_FNC();
-    // LOG_VAR(jmg->getName());
     return true;
   }
 };

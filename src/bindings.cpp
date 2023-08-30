@@ -120,6 +120,11 @@ class PyBioIK {
     return {out};
   }
 
+  std::vector<int> joint_indices_for_group(std::string const &group) {
+    auto jmg = model_->getJointModelGroup(group);
+    return jmg->getVariableIndexList();
+  }
+
   robot_model_loader::RobotModelLoaderPtr model_loader_;
   moveit::core::RobotModelConstPtr const model_;
   std::string robot_description_;
@@ -134,6 +139,7 @@ PYBIND11_MODULE(pybio_ik, m) {
       .def("ik_from", &PyBioIK::ik_from, py::arg("targets"), py::arg("start"), py::arg("group_name"))
       .def("object_point_ik", &PyBioIK::object_point_ik, py::arg("link_name"), py::arg("goal"), py::arg("offset"),
            py::arg("group_name"))
+       .def("joint_indices_for_group", &PyBioIK::joint_indices_for_group, py::arg("group_name"))
       //
       ;
 }

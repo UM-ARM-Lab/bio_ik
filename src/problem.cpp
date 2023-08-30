@@ -335,8 +335,6 @@ bool Problem::checkSolutionActiveVariables(const std::vector<Frame>& tip_frames,
         }
     }
 
-    // LOG("checkSolutionActiveVariables true");
-
     return true;
 }
 }
